@@ -80,6 +80,11 @@ The addon also keeps a **history journal**: quests taken and turned in, level-up
 
 A plain `/reload` refreshes the file; `/cexp` freezes a snapshot earlier (e.g. buffs before a fight). `/cexp help` prints a short help.
 
+4. **Fight and dungeon analysis.** Type `/combatlog` in game before a dungeon. Afterwards ask Claude
+   *"how did the run go?"*: the plugin summarizes the game's combat log: damage and healing per group
+   member, boss kills and wipes, deaths with the last hits taken, and for tanks how many of the mobs'
+   attacks you actually held.
+
 Not using Claude Code? You can attach the `ClaudeExport.lua` file to a chat in Claude (or any assistant)
 and ask the same questions.
 
@@ -174,6 +179,11 @@ claude plugin update wow-companion@claudeexport
 > **Подробности боя на новых клиентах.** В WoW Forever и клиентах эпохи Midnight (12.x) аддонам запрещено читать события журнала боя. Поэтому журнал записывает сам факт смерти, но не то, кто убил, и не считает убийства. Для этого набери в игре `/combatlog`: игра сама пишет `Logs/WoWCombatLog-*.txt`, и Claude может разобрать этот файл (смерти, полученный урон, сорванные мобы). На Classic Era и TBC/Wrath/Cata/MoP Classic аддон по-прежнему сам записывает убийц и убийства.
 
 Для обновления файла достаточно `/reload`. `/cexp` фиксирует снимок раньше (например, баффы перед боем).
+
+4. **Разбор боёв и подземелий.** Перед подземельем набери в игре `/combatlog`. После похода спроси
+   Claude «как прошёл поход?»: плагин разберёт журнал боя игры. Покажет урон и лечение каждого
+   участника, убийства боссов и вайпы, смерти с последними ударами, а танку — какую долю атак мобов
+   он действительно держал на себе.
 
 Если не пользуешься Claude Code, можно прикрепить файл `ClaudeExport.lua` к чату с Claude
 (или с любым ассистентом) и задать те же вопросы.

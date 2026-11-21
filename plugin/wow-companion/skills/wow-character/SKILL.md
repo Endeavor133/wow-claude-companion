@@ -1,6 +1,6 @@
 ---
 name: wow-character
-description: Read the user's World of Warcraft character from the ClaudeExport addon's SavedVariables file (quests and objectives, completed quests, talents, gear with stats, bags, stats, professions, spellbook, action bars with key bindings, buffs/debuffs, reputation, durability, history journal of quests/deaths/loot/dungeons) and write a step-by-step plan the user opens in game with /cplan. Use whenever the user asks for WoW advice that depends on their character — leveling route, what to do next, quest help, talent build, gear upgrades, professions, dungeon prep — or says "read my export", "читай экспорт", "/cexp done", "готово, читай".
+description: Read the user's World of Warcraft character from the ClaudeExport addon's SavedVariables file (quests and objectives, completed quests, talents, gear with stats, bags, stats, professions, spellbook, action bars with key bindings, buffs/debuffs, reputation, durability, history journal of quests/deaths/loot/dungeons), analyze the game's combat log (damage, healing, tanking, deaths, boss kills), and write a step-by-step plan the user opens in game with /cplan. Use whenever the user asks for WoW advice that depends on their character — leveling route, what to do next, quest help, talent build, gear upgrades, professions, dungeon prep, how a fight or dungeon run went — or says "read my export", "читай экспорт", "/cexp done", "готово, читай".
 ---
 
 # WoW character from ClaudeExport
@@ -63,15 +63,12 @@ Besides the per-character entries, `ClaudeExportDB.history["Name-Realm"]` is a r
 |---|---|
 | `events` | last 1000 events, each with `t` (time), `zone`, `level`, `type`: `login`, `logout` (also fired by /reload), `quest_accepted`, `quest_turned_in` (xp, money), `level_up`, `death` (killer, spell, last 5 hits, group), `loot` (item, count, quality), `instance_enter` (name, group members) / `instance_leave` (minutes), `group_joined` / `group_left` |
 | `xpByZone`, `secondsByZone`, `killsByZone`, `deathsByZone` | totals per zone: use them for XP/hour and "where do I die" analysis |
+| `money` | `earned` / `spent` in copper since the journal started |
 
 On WoW Forever and Midnight-era clients addons may not read combat log events, so `killsByZone` and
-the `killer` / `lastHits` of deaths stay empty there. For combat details read the game's own combat
-log file instead: the user types `/combatlog`, the game writes `<flavor>/Logs/WoWCombatLog-*.txt`
-(CSV-like lines: timestamp, event, source, target, spell, amounts). Match a `death` event's time
-against `UNIT_DIED` lines and the damage lines just before it.
-| `money` | `earned` / `spent` in copper since the journal started |
-| `reason` | what triggered the snapshot: `login`, `manual` (/cexp) or `logout` |
+the `killer` / `lastHits` of deaths stay empty there. Use the game's combat log file instead (section 5).
 
+Each character entry also has `reason`: what triggered the snapshot (`login`, `manual` = /cexp, `logout`).
 Money is in copper: 10000 = 1 gold, 100 = 1 silver.
 
 With `traits.nodes`, group nodes into trees by `x` ranges (each tree is a separate x band) and
@@ -129,7 +126,51 @@ section so steps tick automatically; `mapID` comes from `character.mapID` when t
 zone, or the flavor's database. Don't invent coordinates you're unsure of: omit `x`/`y` instead.
 Editing `Plan.lua` needs only `/reload`; installing a new addon version needs a full client restart.
 
-## 5. When the data is missing or stale
+## 5. Combat log analysis
+
+For fights, dungeon runs, deaths and tanking, read the game's own combat log. It is written by the
+game itself (allowed on every client, it's what Warcraft Logs uses), with a short delay.
+
+1. The user types `/combatlog` in game once per session (it stays on until logout or `/combatlog` again).
+   Files: `<flavor>/Logs/WoWCombatLog-MMDDYY_HHMMSS.txt`, one per session, several MB per hour.
+2. Summarize with the bundled script (POSIX awk, runs in Git Bash / macOS / Linux in well under a second
+   for a 10 MB file). The script is in this skill's directory:
+
+```bash
+awk -f "<skill dir>/scripts/combatlog.awk" -v me="CharName" [-v from="14:16" -v to="14:41"] "<flavor>/Logs/WoWCombatLog-<newest>.txt"
+```
+
+   `me` is part of the character name (from `character.name` in the export). `from`/`to` limit the time
+   window (time of day). Use the journal's `instance_enter` / `instance_leave` times to cut out one
+   dungeon run.
+
+   Output: zones and boss encounters (kill / wipe), each group member's damage, effective healing,
+   overheal, damage taken, creature melee attacks taken and deaths, the **tank share** (% of creature
+   melee attacks on the group that hit `me`), `me`'s damage and healing by ability, top sources of damage
+   taken, and every group death with the last hits before it.
+3. Interpret, don't just paste numbers. For a tank: share under ~80% means mobs regularly ran to others;
+   look at who took hits and when. For damage: compare abilities with the rotation you'd expect for the
+   spec. For deaths: name the mob/ability and what would have prevented it.
+
+For a question the script doesn't answer, grep the file directly. Line format:
+
+```
+MM/DD/YYYY HH:MM:SS.ffff  EVENT,srcGUID,"srcName",srcFlags,srcRaidFlags,dstGUID,"dstName",dstFlags,dstRaidFlags,...
+```
+
+- Spell events add `spellId,"spellName",school` (fields 10–12).
+- With advanced logging (the header line says `COMBAT_LOG_VERSION,…,ADVANCED_LOG_ENABLED`, and Forever
+  writes the advanced block regardless) 19 unit fields follow: info GUID, owner, hp, max hp, attack power,
+  spell power, armor, absorb, power type / current / max / cost, x, y, uiMapID, facing, level. So the
+  amount is field **29** for `SWING_DAMAGE`, **32** for `SPELL_DAMAGE` / `SPELL_PERIODIC_DAMAGE` /
+  `RANGE_DAMAGE` / `SPELL_HEAL` (overheal is 34). Without advanced logging: 10 and 13.
+- Flags: last hex digit is affiliation: `1` me, `2` party, `4` raid, `8` outsider. Player names are
+  `Name-Realm-Region`; creature names may contain hyphens.
+- Useful events: `UNIT_DIED`, `PARTY_KILL`, `ENCOUNTER_START` / `ENCOUNTER_END` (last-but-one field
+  `1` = kill), `ZONE_CHANGE`, `SPELL_INTERRUPT`, `SPELL_DISPEL`, `SPELL_AURA_APPLIED`.
+- On PvP realms the log also contains strangers fighting nearby: filter by affiliation, as the script does.
+
+## 6. When the data is missing or stale
 
 Ask the user to refresh. Use these exact steps:
 

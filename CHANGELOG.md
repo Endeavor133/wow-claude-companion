@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0 — 2026-11-21
+
+- Plugin: combat log analysis. New `scripts/combatlog.awk` (POSIX awk, no dependencies) summarizes
+  `Logs/WoWCombatLog-*.txt`: zones, boss encounters (kill / wipe), damage / healing / overheal /
+  damage taken / deaths per group member, tank share of creature melee attacks, your damage and
+  healing by ability, top damage sources, deaths with the last hits. Time window via `from` / `to`.
+- Skill: documents the combat log format (field offsets with and without advanced logging, flags),
+  fixes a broken table in the journal section.
+- Addon: no functional changes (version bump only).
+
 ## 1.2.0 — 2026-11-21
 
 - History journal (`ClaudeExportDB.history`): quests accepted / turned in, level-ups, deaths with the
