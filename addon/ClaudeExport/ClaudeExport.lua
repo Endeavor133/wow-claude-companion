@@ -9,7 +9,7 @@
 -- C_* namespaces second, so one addon works on Classic Era, Forever, Cata/MoP Classic and retail clients.
 
 local _, ns = ...
-local VERSION = "1.3.1"
+local VERSION = "1.3.2"
 local FORMAT = 1 -- bump when the layout of ClaudeExportDB changes
 
 ------------------------------------------------------------------ helpers
@@ -338,6 +338,10 @@ local function snapBags()
         if type(info[1]) == "table" then count = info[1].stackCount or 1
         elseif type(info[2]) == "number" then count = info[2] end
         local it = itemShort(link, false)
+        -- equippable items get their stats (random suffixes like "of the Boar" only show in the link)
+        if it.equipLoc and it.equipLoc ~= "" and it.equipLoc ~= "INVTYPE_NON_EQUIP_IGNORE" then
+          it.stats = itemShort(link, true).stats
+        end
         local key = it.name or link
         if byName[key] then byName[key].count = byName[key].count + count
         else

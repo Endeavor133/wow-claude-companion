@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.2 — 2026-11-21
+
+- Addon: equippable items in bags now carry `stats` (DPS, primary stats, spell power, resistances),
+  read from the item link. Random suffixes ("of the Boar", "of Magic") and flavor-specific changes are
+  visible this way; database sites often show only the base item.
+- Skill: compare bag items with equipped gear by the exported `stats`, not by a database tooltip.
+
 ## 1.3.1 — 2026-11-21
 
 - Addon: the journal now records loot. The pattern built from the client's "You receive loot: %s"

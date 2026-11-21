@@ -46,7 +46,7 @@ The file is a Lua table literal and can be 30–100 KB. Don't dump it all into c
 | `quests` | active log: title, level, zone header, id, `complete`, objectives as `[x]` / `[ ]` lines, sometimes description |
 | `completed` | `[questID] = "title"` or `= true` (title not cached). Every quest the character has turned in |
 | `gear` | per slot: name, id, ilvl, quality (0 grey … 4 epic), reqLevel, type/subtype, stats (localized names) |
-| `bags` | `items` (name, id, count, type, ilvl, quality), `freeSlots`, `totalSlots` (older versions: plain list) |
+| `bags` | `items` (name, id, count, type, ilvl, quality, equipLoc; equippable items also `stats` since 1.3.2), `freeSlots`, `totalSlots` (older versions: plain list) |
 | `skills` | professions, secondary skills, weapon skills, armor proficiencies with rank / max |
 | `spells` | spellbook by tab: `"Name (Rank N) #spellID"`, `[passive]` marked |
 | `actionBars` | per bar (`MainBar`, `BottomLeftBar`, `RightBar`, …): buttons with `slot`, `button` 1–12, `type` (spell/item/macro), `name`, `key` binding, macro `body`. `mainBarKeys`, `currentPage` |
@@ -86,7 +86,7 @@ rows by `y`. Only nodes with `rank > 0` are learned.
   Quest IDs without a title can be resolved on the flavor's database (`/quest=<id>`).
 - Compare the quest level with `character.level`: within 2 levels is comfortable,
   3–4 above is hard solo, 5+ needs a group.
-- Point out empty gear slots and items in bags that are better than what's equipped.
+- Point out empty gear slots and items in bags that are better than what's equipped. Compare by the exported `stats` (they include random suffixes and the flavor's own numbers); a database tooltip may show only the base item. `к урону в секунду` / "damage per second" is the weapon DPS.
 - With `actionBars`, check that key abilities for the user's role are on bound buttons, and
   suggest concrete moves ("put Consecration on key 5"). With `auras`, check missing self-buffs,
   food/scroll buffs, or debuffs like resurrection sickness before a dungeon.
