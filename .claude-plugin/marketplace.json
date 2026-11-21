@@ -4,6 +4,7 @@
     "name": "Endeavor133",
     "url": "https://github.com/Endeavor133"
   },
+  "description": "World of Warcraft companion for Claude Code: reads your character from the ClaudeExport addon and sends plans back into the game.",
   "plugins": [
     {
       "name": "wow-companion",
