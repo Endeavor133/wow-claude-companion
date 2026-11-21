@@ -49,6 +49,16 @@ Download the latest zips from [Releases](https://github.com/Endeavor133/wow-clau
 /plugin install wow-companion@claudeexport
 ```
 
+**Update to a new version:**
+
+```
+claude plugin marketplace update claudeexport
+claude plugin update wow-companion@claudeexport
+```
+
+Then restart Claude Code. For the addon, replace the `ClaudeExport` folder with the one from the new
+release zip (keep your `Plan.lua` if you want), and restart the game if the release notes say new files were added.
+
 Without plugins, you can copy `plugin/wow-companion/skills/wow-character` into `~/.claude/skills/`.
 It works the same as a personal skill.
 
@@ -57,14 +67,16 @@ Start Claude Code in your WoW folder (or give it access to it). The skill finds
 
 ## 3. Use it
 
-1. In game: `/cexp` takes a snapshot, then `/reload` writes it to disk. A snapshot is also taken
+1. In game: `/reload` takes a snapshot and writes it to disk. A snapshot is also taken
    automatically on login and logout.
 2. Ask Claude: *"Read my export. Where should I level next?"*, *"Which talents should I take at 30?"*,
    *"Which of my quests are too high for me?"*, *"Is anything in my bags better than my gear?"*
 
 3. Ask Claude to *make a plan*: it writes `Plan.lua` into the addon folder. After `/reload`, type `/cplan` to open the checklist (quest steps tick themselves, `>` sets a map pin). `/cplan reset` clears checkmarks. The **minimap button** does the same with one click (right click takes a snapshot; `/cplan minimap` hides it).
 
-The addon also keeps a **history journal**: quests taken and turned in, level-ups, deaths (with what hit you), loot, dungeon runs, XP/time/kills per zone. Ask *"where do I lose the most time?"* or *"why did I die in the Deadmines?"*.
+The addon also keeps a **history journal**: quests taken and turned in, level-ups, deaths, loot, dungeon runs with group and duration, XP and time per zone, gold earned and spent. Ask *"where do I lose the most time?"* or *"how much XP did the Deadmines give?"*.
+
+> **Combat details on newer clients.** On WoW Forever and Midnight-era clients (12.x), addons are not allowed to read combat log events, so the journal records *that* you died, but not who killed you, and doesn't count kills. For that, type `/combatlog` in game: the game itself writes `Logs/WoWCombatLog-*.txt`, and Claude can read that file to break down deaths, damage taken and lost aggro. On Classic Era, TBC/Wrath/Cata/MoP Classic the addon still records killers and kills itself.
 
 A plain `/reload` refreshes the file; `/cexp` freezes a snapshot earlier (e.g. buffs before a fight). `/cexp help` prints a short help.
 
@@ -132,6 +144,17 @@ MIT, see [LICENSE](LICENSE).
 /plugin install wow-companion@claudeexport
 ```
 
+**Обновление до новой версии:**
+
+```
+claude plugin marketplace update claudeexport
+claude plugin update wow-companion@claudeexport
+```
+
+Затем перезапусти Claude Code. Аддон обновляется заменой папки `ClaudeExport` на папку из архива нового
+релиза (свой `Plan.lua` можно сохранить). Если в описании релиза сказано, что добавлены новые файлы,
+перезапусти игру.
+
 Без плагинов можно скопировать `plugin/wow-companion/skills/wow-character` в `~/.claude/skills/`.
 
 Запускай Claude Code в папке игры или дай ему к ней доступ. Скилл сам найдёт
@@ -139,14 +162,16 @@ MIT, see [LICENSE](LICENSE).
 
 ### 3. Использование
 
-1. В игре: `/cexp` делает снимок, затем `/reload` записывает его на диск. Снимок также делается
+1. В игре: `/reload` делает снимок и записывает его на диск. Снимок также делается
    сам при входе в игру и при выходе.
 2. Спроси Claude: «Прочитай экспорт. Куда идти качаться?», «Какие таланты брать на 30?»,
    «Какие мои квесты слишком высокие?», «Есть ли в сумках что-то лучше надетого?»
 
 3. Попроси Claude *составить план*: он запишет `Plan.lua` в папку аддона. После `/reload` набери `/cplan`, откроется чек-лист (квестовые шаги отмечаются сами, кнопка `>` ставит метку на карте). `/cplan reset` сбрасывает отметки. То же делает **кнопка на миникарте** (ПКМ делает снимок, `/cplan minimap` скрывает кнопку).
 
-Аддон также ведёт **журнал событий**: взятые и сданные квесты, уровни, смерти (кто и чем убил), добыча, походы в подземелья, опыт/время/убийства по зонам. Можно спросить «где я теряю больше всего времени?» или «почему я умер в Мёртвых копях?».
+Аддон также ведёт **журнал событий**: взятые и сданные квесты, уровни, смерти, добыча, походы в подземелья (с составом группы и длительностью), опыт и время по зонам, заработанное и потраченное золото. Можно спросить «где я теряю больше всего времени?» или «сколько опыта дали Мёртвые копи?».
+
+> **Подробности боя на новых клиентах.** В WoW Forever и клиентах эпохи Midnight (12.x) аддонам запрещено читать события журнала боя. Поэтому журнал записывает сам факт смерти, но не то, кто убил, и не считает убийства. Для этого набери в игре `/combatlog`: игра сама пишет `Logs/WoWCombatLog-*.txt`, и Claude может разобрать этот файл (смерти, полученный урон, сорванные мобы). На Classic Era и TBC/Wrath/Cata/MoP Classic аддон по-прежнему сам записывает убийц и убийства.
 
 Для обновления файла достаточно `/reload`. `/cexp` фиксирует снимок раньше (например, баффы перед боем).
 
