@@ -1,0 +1,10 @@
+{
+  "name": "wow-companion",
+  "version": "1.2.0",
+  "description": "Reads your World of Warcraft character from the ClaudeExport addon (quests, talents, gear, stats, bags, professions, spells, action bars, buffs, completed quests) so Claude can give leveling, build and route advice based on the real state of your character.",
+  "author": { "name": "Endeavor133", "url": "https://github.com/Endeavor133" },
+  "homepage": "https://github.com/Endeavor133/wow-claude-companion",
+  "repository": "https://github.com/Endeavor133/wow-claude-companion",
+  "license": "MIT",
+  "keywords": ["world of warcraft", "wow", "addon", "leveling", "talents", "quests"]
+}
