@@ -9,7 +9,7 @@
 -- C_* namespaces second, so one addon works on Classic Era, Forever, Cata/MoP Classic and retail clients.
 
 local _, ns = ...
-local VERSION = "1.3.0"
+local VERSION = "1.3.1"
 local FORMAT = 1 -- bump when the layout of ClaudeExportDB changes
 
 ------------------------------------------------------------------ helpers

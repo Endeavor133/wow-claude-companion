@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1 — 2026-11-21
+
+- Addon: the journal now records loot. The pattern built from the client's "You receive loot: %s"
+  message was escaped wrongly and never matched, so no `loot` events were written.
+
 ## 1.3.0 — 2026-11-21
 
 - Plugin: combat log analysis. New `scripts/combatlog.awk` (POSIX awk, no dependencies) summarizes

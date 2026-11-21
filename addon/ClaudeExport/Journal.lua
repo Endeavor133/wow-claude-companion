@@ -46,7 +46,7 @@ end
 local function fmtToPattern(fmt)
   if type(fmt) ~= "string" then return nil end
   local p = fmt:gsub("([%(%)%.%+%-%*%?%[%]%^%$])", "%%%1")
-  p = p:gsub("%%%%s", "(.+)"):gsub("%%%%d", "(%%d+)")
+  p = p:gsub("%%s", "(.+)"):gsub("%%d", "(%%d+)")
   return "^" .. p .. "$"
 end
 local LOOT_PATTERNS = {}

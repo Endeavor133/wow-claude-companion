@@ -2,7 +2,7 @@
 ## Title: ClaudeExport
 ## Notes: Saves your character (quests, talents, gear, stats, bags, skills, spells, action bars, buffs, completed quests, history journal) to a file an AI assistant can read, and shows the assistant's plan with /cplan. Type /cexp.
 ## Notes-ruRU: Сохраняет персонажа (квесты, таланты, снаряжение, характеристики, сумки, навыки, заклинания, панели, баффы, выполненные квесты, журнал событий) в файл для ИИ-ассистента и показывает его план по команде /cplan. Команда /cexp.
-## Version: 1.3.0
+## Version: 1.3.1
 ## Author: Endeavor133
 ## X-Website: https://github.com/Endeavor133/wow-claude-companion
 ## SavedVariables: ClaudeExportDB

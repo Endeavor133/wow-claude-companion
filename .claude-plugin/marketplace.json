@@ -10,7 +10,7 @@
       "name": "wow-companion",
       "source": "./plugin/wow-companion",
       "description": "Reads your WoW character from the ClaudeExport addon so Claude can advise on leveling, quests, talents and gear.",
-      "version": "1.3.0"
+      "version": "1.3.1"
     }
   ]
 }
