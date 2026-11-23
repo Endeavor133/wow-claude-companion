@@ -54,6 +54,7 @@ The file is a Lua table literal and can be 30–100 KB. Don't dump it all into c
 | `durability` | percent per equipped slot, `lowest` |
 | `reputation` | factions: name, group, standing label, value / max within the standing |
 | `plan` | progress on the current `/cplan` plan: id, title, checked step indexes, done / total |
+| `recipes` | known recipes per profession (name, id, `difficulty`: optimal = orange, medium = yellow, easy = green, trivial = grey; `skillUps`), profession `rank` / `max`, `scanned` time. Filled only for professions whose window the user opened at least once since 1.4.0 — if one is missing, ask them to open it and /reload. Use it for "what should I craft to skill up" and to avoid suggesting recipes they already know |
 | `api` | which API families exist on this client (debug aid) |
 
 Besides the per-character entries, `ClaudeExportDB.history["Name-Realm"]` is a running journal

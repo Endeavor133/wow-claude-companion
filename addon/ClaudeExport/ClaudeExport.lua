@@ -9,7 +9,7 @@
 -- C_* namespaces second, so one addon works on Classic Era, Forever, Cata/MoP Classic and retail clients.
 
 local _, ns = ...
-local VERSION = "1.3.2"
+local VERSION = "1.4.0"
 local FORMAT = 1 -- bump when the layout of ClaudeExportDB changes
 
 ------------------------------------------------------------------ helpers
@@ -99,6 +99,7 @@ local PROBE = {
   "GetNumTalentTabs", "GetTalentInfo", "C_Traits", "C_ClassTalents",
   "GetNumSpellTabs", "C_SpellBook", "GetNumSkillLines", "C_SkillInfo",
   "GetQuestLogTitle", "C_QuestLog", "GetItemInfo", "C_Item", "C_Container",
+  "C_TradeSkillUI", "GetNumTradeSkills", "GetNumCrafts",
 }
 
 local function snapApi()
@@ -621,6 +622,151 @@ local function snapPlan()
            done = ps and ps.done, total = ps and ps.total }
 end
 
+------------------------------------------------------------------ recipes
+-- The game lists known recipes only while a profession window is open, so every time the user opens
+-- one we scan it and keep the result in ClaudeExportDB.recipes[charKey][profession]. Snapshots copy
+-- that cache. Professions that were never opened since installing this version are simply missing.
+local DIFFICULTY = { [0] = "optimal", [1] = "medium", [2] = "easy", [3] = "trivial" } -- orange/yellow/green/grey
+
+local function recipeStore()
+  ClaudeExportDB = ClaudeExportDB or {}
+  ClaudeExportDB.recipes = ClaudeExportDB.recipes or {}
+  local key = ns.charKey()
+  ClaudeExportDB.recipes[key] = ClaudeExportDB.recipes[key] or {}
+  return ClaudeExportDB.recipes[key]
+end
+
+local function str(s) return (type(s) == "string" and s ~= "") and s or nil end
+local function num(n) return (type(n) == "number" and n > 0) and n or nil end
+
+-- rank / max from the skills section when the trade skill API doesn't say
+local function skillRank(name)
+  for _, row in ipairs(snapSkills()) do
+    if row.name == name then return row.rank, row.max end
+  end
+end
+
+-- Forever returns empty strings from some of these, so try every source until one gives a name
+local function modernProfession(firstRecipeID)
+  local T = C_TradeSkillUI
+  local name, rank, max, lineID
+  for _, fn in ipairs({ T.GetChildProfessionInfo, T.GetBaseProfessionInfo }) do
+    local info = fn and try(fn)
+    if type(info) == "table" then
+      name = name or str(info.parentProfessionName) or str(info.professionName)
+      rank, max = rank or num(info.skillLevel), max or num(info.maxSkillLevel)
+      lineID = lineID or num(info.professionID) or num(info.parentProfessionID)
+    end
+  end
+  if T.GetTradeSkillLine then
+    local id, n, r, m = try(T.GetTradeSkillLine)
+    name, rank, max, lineID = name or str(n), rank or num(r), max or num(m), lineID or num(id)
+  end
+  if not name and lineID and T.GetTradeSkillDisplayName then name = str(try(T.GetTradeSkillDisplayName, lineID)) end
+  if not name and lineID and T.GetProfessionInfoBySkillLineID then
+    local info = try(T.GetProfessionInfoBySkillLineID, lineID)
+    if type(info) == "table" then name = str(info.parentProfessionName) or str(info.professionName) end
+  end
+  if not name and firstRecipeID and T.GetTradeSkillLineForRecipe then
+    local _, lineName, _, parentName = try(T.GetTradeSkillLineForRecipe, firstRecipeID)
+    name = str(parentName) or str(lineName)
+  end
+  if name and not (rank and max) then
+    local r, m = skillRank(name)
+    rank, max = rank or r, max or m
+  end
+  return name, rank, max
+end
+
+local function scanModern()
+  local T = C_TradeSkillUI
+  if not (T and T.GetAllRecipeIDs and T.GetRecipeInfo) then return nil end
+  if T.IsTradeSkillReady and not try(T.IsTradeSkillReady) then return nil end
+  if T.IsTradeSkillLinked and try(T.IsTradeSkillLinked) then return nil end -- someone else's link
+  if T.IsTradeSkillGuild and try(T.IsTradeSkillGuild) then return nil end
+  local ids = try(T.GetAllRecipeIDs)
+  if type(ids) ~= "table" or #ids == 0 then return nil end
+  local name, rank, max = modernProfession(ids[1])
+  if not name then name = "? recipe " .. tostring(ids[1]) end -- unnamed, but never merged with another profession
+  local list = {}
+  for _, id in ipairs(ids) do
+    local r = try(T.GetRecipeInfo, id)
+    if type(r) == "table" and r.learned and r.name then
+      table.insert(list, { name = r.name, id = id, difficulty = DIFFICULTY[r.relativeDifficulty] or r.relativeDifficulty,
+                           skillUps = (r.numSkillUps and r.numSkillUps > 1) and r.numSkillUps or nil })
+    end
+  end
+  return name, rank, max, list
+end
+
+local function scanClassic()
+  if not (GetTradeSkillLine and GetNumTradeSkills and GetTradeSkillInfo) then return nil end
+  local name, rank, max = try(GetTradeSkillLine)
+  if not name or name == "UNKNOWN" then return nil end
+  local n = try(GetNumTradeSkills) or 0
+  if n == 0 then return nil end
+  local list, header = {}, nil
+  for i = 1, n do
+    local rname, rtype = try(GetTradeSkillInfo, i)
+    if rtype == "header" or rtype == "subheader" then header = rname
+    elseif rname then
+      local link = GetTradeSkillItemLink and try(GetTradeSkillItemLink, i)
+      table.insert(list, { name = rname, difficulty = rtype, category = header,
+                           item = link and tonumber(link:match("item:(%d+)")) or nil })
+    end
+  end
+  return name, rank, max, list
+end
+
+local function scanCraft() -- Classic Era enchanting / beast training use the separate craft window
+  if not (GetNumCrafts and GetCraftInfo) then return nil end
+  local name, rank, max = try(GetCraftDisplaySkillLine)
+  if not name then return nil end
+  local list = {}
+  for i = 1, (try(GetNumCrafts) or 0) do
+    local rname, sub, rtype = try(GetCraftInfo, i)
+    if rname and rtype ~= "header" then table.insert(list, { name = rname, rank = sub ~= "" and sub or nil, difficulty = rtype }) end
+  end
+  if #list == 0 then return nil end
+  return name, rank, max, list
+end
+
+local function scanRecipes(craft)
+  local name, rank, max, list
+  if craft then name, rank, max, list = scanCraft()
+  else
+    name, rank, max, list = scanModern()
+    if not name then name, rank, max, list = scanClassic() end
+  end
+  if not name or not list then return end
+  table.sort(list, function(a, b) return a.name < b.name end)
+  local store = recipeStore()
+  store[""] = nil -- 1.3.2 test build stored every profession under an empty name
+  local old = store[name]
+  -- a search box or "have materials" filter can hide recipes: never shrink the list because of it
+  if old and old.recipes and #old.recipes > #list and old.rank and rank and rank <= old.rank then return end
+  store[name] = { rank = rank, max = max, count = #list, scanned = date("%Y-%m-%d %H:%M:%S"), recipes = list }
+end
+
+local function snapRecipes()
+  local store = recipeStore()
+  if next(store) == nil then return { note = "open each profession window once, then /reload" } end
+  return store
+end
+
+local rf = CreateFrame("Frame")
+for _, ev in ipairs({ "TRADE_SKILL_SHOW", "TRADE_SKILL_LIST_UPDATE", "TRADE_SKILL_UPDATE", "NEW_RECIPE_LEARNED",
+                      "CRAFT_SHOW", "CRAFT_UPDATE" }) do
+  pcall(rf.RegisterEvent, rf, ev)
+end
+local pending = {}
+rf:SetScript("OnEvent", function(_, ev)
+  local craft = ev:find("^CRAFT") ~= nil
+  if pending[craft] then return end
+  pending[craft] = true
+  C_Timer.After(0.5, function() pending[craft] = nil; pcall(scanRecipes, craft) end)
+end)
+
 ------------------------------------------------------------------ main
 local SECTIONS = {
   meta = snapMeta, character = snapChar, stats = snapStats, talents = snapTalents,
@@ -628,6 +774,7 @@ local SECTIONS = {
   skills = snapSkills, spells = snapSpells, api = snapApi,
   actionBars = snapActionBars, auras = snapAuras,
   durability = snapDurability, reputation = snapReputation, plan = snapPlan,
+  recipes = snapRecipes,
 }
 
 local function charKey()

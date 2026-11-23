@@ -4,7 +4,7 @@
 
 **ClaudeExport** is a small World of Warcraft addon that saves your character to a file:
 active quests with objectives, completed quests, talents, gear with stats, bags, stats,
-professions, spellbook, action bars with key bindings, and buffs/debuffs. The **wow-companion** plugin for Claude Code teaches Claude
+professions with known recipes, spellbook, action bars with key bindings, and buffs/debuffs. The **wow-companion** plugin for Claude Code teaches Claude
 where that file is and how to read it. Then you can just ask *"what should I do next?"*,
 and Claude answers from the real state of your character, without screenshots.
 
@@ -80,6 +80,8 @@ The addon also keeps a **history journal**: quests taken and turned in, level-up
 
 A plain `/reload` refreshes the file; `/cexp` freezes a snapshot earlier (e.g. buffs before a fight). `/cexp help` prints a short help.
 
+**Recipes:** the game lists recipes only while a profession window is open. Open each profession once (and again after learning new recipes), then `/reload`.
+
 4. **Fight and dungeon analysis.** Type `/combatlog` in game before a dungeon. Afterwards ask Claude
    *"how did the run go?"*: the plugin summarizes the game's combat log: damage and healing per group
    member, boss kills and wipes, deaths with the last hits taken, and for tanks how many of the mobs'
@@ -113,7 +115,7 @@ MIT, see [LICENSE](LICENSE).
 
 **ClaudeExport** — небольшой аддон для World of Warcraft. Он сохраняет персонажа в файл:
 активные квесты с целями, выполненные квесты, таланты, снаряжение со статами, сумки,
-характеристики, профессии, книгу заклинаний, панели с биндами, баффы и дебаффы. Плагин **wow-companion** для Claude Code
+характеристики, профессии с изученными рецептами, книгу заклинаний, панели с биндами, баффы и дебаффы. Плагин **wow-companion** для Claude Code
 объясняет Claude, где лежит этот файл и как его читать. После этого можно просто спросить
 «что делать дальше?», и Claude ответит по реальному состоянию персонажа, без скриншотов.
 
@@ -179,6 +181,8 @@ claude plugin update wow-companion@claudeexport
 > **Подробности боя на новых клиентах.** В WoW Forever и клиентах эпохи Midnight (12.x) аддонам запрещено читать события журнала боя. Поэтому журнал записывает сам факт смерти, но не то, кто убил, и не считает убийства. Для этого набери в игре `/combatlog`: игра сама пишет `Logs/WoWCombatLog-*.txt`, и Claude может разобрать этот файл (смерти, полученный урон, сорванные мобы). На Classic Era и TBC/Wrath/Cata/MoP Classic аддон по-прежнему сам записывает убийц и убийства.
 
 Для обновления файла достаточно `/reload`. `/cexp` фиксирует снимок раньше (например, баффы перед боем).
+
+**Рецепты:** игра показывает их только при открытом окне профессии. Открой каждую профессию один раз (и снова после изучения новых рецептов), затем `/reload`.
 
 4. **Разбор боёв и подземелий.** Перед подземельем набери в игре `/combatlog`. После похода спроси
    Claude «как прошёл поход?»: плагин разберёт журнал боя игры. Покажет урон и лечение каждого

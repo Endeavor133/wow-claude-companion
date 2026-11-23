@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.0 — 2026-11-23
+
+- Addon: new `recipes` section with known recipes per profession: name, recipe id, difficulty color
+  (optimal / medium / easy / trivial), profession rank. The game lists recipes only while a profession
+  window is open, so the addon scans the window each time it opens and keeps the result between sessions.
+  Works with the modern `C_TradeSkillUI` API (including WoW Forever, which returns empty profession names:
+  the name is resolved from several sources) and the classic trade skill / craft windows.
+- Skill: describes the `recipes` section.
+
 ## 1.3.2 — 2026-11-21
 
 - Addon: equippable items in bags now carry `stats` (DPS, primary stats, spell power, resistances),
